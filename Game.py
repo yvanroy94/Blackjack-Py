@@ -2,6 +2,11 @@ import random
 import time
 
 
+stats = open("stats.txt", "r")
+cash = int(stats.read())
+stats.close()
+
+
 def calc(dealer_turn):
 
     total = 0
@@ -33,6 +38,9 @@ playing = True
 
 while playing is True:
 
+    wager = None
+    betting = True
+
     deck = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"] * 4
 
     player_cards = [random.choice(deck), random.choice(deck)]
@@ -46,11 +54,20 @@ while playing is True:
     dealer_dead = False
     dealer_stop = False
 
+    while betting is True:
+        try:
+            wager = int(input("\nPlease pass an integer amount to bet:"))
+        except:
+            print("\nThat is not a valid integer bet. Please try again.")
+        else:
+            break
+
 
     while player_stop is False and player_dead is False:
 
         print("\nDealer has [", *dealer_cards, "] =>", dealer_total)
         print("You have [", *player_cards, "] =>", player_total)
+
 
         if player_total == 21 and len(player_cards) == 2:
             player_win = True
@@ -99,19 +116,31 @@ while playing is True:
         if player_dead is False and dealer_dead is False:
 
             if player_total == dealer_total:
-                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", it's a draw!")
+                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", it's a draw! You get your bet back!\nYou currently have", cash, "bits!")
             elif player_total < dealer_total:
-                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", you lose!")
+                cash -= wager
+                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", you lose!\nYou currently have", cash, "bits!")
             else:
-                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", you win!")
+                cash += wager
+                print("\nDealer has [", *dealer_cards, "] =>", dealer_total, "/ You have [", *player_cards, "] =>", player_total, ", you win!\nYou currently have", cash, "bits!")
 
         elif dealer_dead is True:
-            print("\nThe dealer took one card too many and now has [", *dealer_cards, "] =>", dealer_total, ", you win!")
+            cash += wager
+            print("\nThe dealer took one card too many and now has [", *dealer_cards, "] =>", dealer_total, ", you win!\nYou currently have", cash, "bits!")
         else:
-            print("\nYou took one card too many and now have [", *player_cards, "] =>", player_total, ", you lose!")
+            cash -= wager
+            print("\nYou took one card too many and now have [", *player_cards, "] =>", player_total, ", you lose!\nYou currently have", cash, "bits!")
 
     else:
-        print("\nCongratulations, you hit blackjack!")
+        cash += wager*2
+        print("\nCongratulations, you hit blackjack and double your profit!\nYou currently have", cash, "bits!")
+
+    stats = open("stats.txt", "w")
+    stats.write(str(cash))
+    stats.close()
+
+    wager = None
+    betting = True
 
 
     choice = input("\nThank you for playing! If you want to play another hand, press (enter). To quit, pass (x).")
